@@ -1,0 +1,8 @@
+/frontend/node_modules
+/frontend/dist
+/libc/out
+/libc/obj
+/vis/vis.wasm
+/vis/.vis-sync.wasm
+/vis/obj
+
