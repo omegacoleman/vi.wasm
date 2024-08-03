@@ -74,7 +74,7 @@ bool text_iterator_byte_prev(Iterator *it, char *b) {
 
 bool text_iterator_byte_find_prev(Iterator *it, char b) {
 	while (it->text) {
-		const char *match = vis_memrchr(it->start, b, it->text - it->start);
+		const char *match = memrchr(it->start, b, it->text - it->start);
 		if (match) {
 			it->pos -= it->text - match;
 			it->text = match;

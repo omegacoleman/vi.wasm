@@ -1,10 +1,15 @@
 import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import wasmUrl from './vis.wasm?url';
 
 var ttybuf = "";
-var term = new Terminal({rows:24, cols:80, convertEol: true});
+var term = new Terminal({convertEol: true});
+var fitAddon = new FitAddon();
+term.loadAddon(fitAddon);
+
 term.open(document.getElementById('terminal'));
+fitAddon.fit();
 
 var g_obj = null;
 var g_instance = null;
@@ -19,6 +24,9 @@ var reject_enter = null;
 
 var timeout_timer = null;
 
+var ewinch = -4;
+var is_winch = false;
+
 function enter() {
   return new Promise((resolve, reject) => {
     resolve_enter = resolve;
@@ -29,6 +37,10 @@ function enter() {
 
 function reenter() {
   if (!sleeping) return;
+  if (timeout_timer != null) {
+    clearTimeout(timeout_timer);
+    timeout_timer = null;
+  }
   try {
     let sbaddr = g_exports.asyncify_stackbuf_ptr();
     g_exports.asyncify_start_rewind(sbaddr);
@@ -46,13 +58,20 @@ function yield_after_return() {
 term.onData(
   (str) => {
     ttybuf += str;
-    if (timeout_timer != null) {
-      clearTimeout(timeout_timer);
-      timeout_timer = null;
-    }
     reenter();
   }
 );
+
+const resizeObserver = new ResizeObserver(
+  (entries) => {
+    fitAddon.fit();
+    if (!g_exports || !sleeping) return;
+    is_winch = true;
+    reenter();
+  }
+);
+
+resizeObserver.observe(document.getElementById('terminal-wrapper'));
 
 async function run() {
   try {
@@ -68,6 +87,10 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
       if (sleeping) {
         g_exports.asyncify_stop_rewind();
         sleeping = false;
+        if (is_winch) {
+          is_winch = false;
+          return ewinch;
+        }
       }
       if (ttybuf.length != 0) {
         let view = new Uint8Array(g_buffer);
@@ -85,6 +108,10 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
       if (sleeping) {
         g_exports.asyncify_stop_rewind();
         sleeping = false;
+        if (is_winch) {
+          is_winch = false;
+          if (ttybuf.length == 0) return ewinch;
+        }
 
         if (ttybuf.length != 0) return 1;
         return 0;
@@ -107,14 +134,14 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
       let dec = new TextDecoder("utf-8");
       let arr = new Uint8Array(g_buffer.slice(buffer_start, buffer_end));
       let str = dec.decode(arr);
-      console.log(str);
       term.write(str);
       return buffer_end;
     },
     ttysize: (waddr, haddr) => {
       let view = new Uint32Array(g_buffer);
-      view[waddr >> 2] = 80;
-      view[haddr >> 2] = 24;
+      view[waddr >> 2] = term.cols;
+      view[haddr >> 2] = term.rows;
+      console.log("cols=" + term.cols + " rows=" + term.rows);
     },
     exit: (stcode) => {
       throw new Error("program exited with status " + stcode);

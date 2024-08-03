@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
+#include <wn.h>
 
 #define STDIN_FILENO 0
 #define STDOUT_FILENO 1
@@ -20,6 +21,8 @@
 #define WN_OP_READ 1
 #define WN_OP_WRITE 2
 
+#define EWINCH 4
+
 WNGLUE("ttyread") i32 __wn_ttyread(i32 buffer, i32 end);
 WNGLUE("ttywrite") i32 __wn_ttywrite(i32 buffer, i32 end);
 WNGLUE("ttywait") i32 __wn_ttywait(i32 timeout_ms);
@@ -28,21 +31,40 @@ WNGLUE("growmem") i32 __wn_growmem(i32 incr);
 WNGLUE("exit") void __wn_exit(i32 status);
 WNGLUE("dbglog") i32 __wn_dbglog(i32 buffer, i32 end);
 
+wn_winch_handler_t __wn_winch_handler_p = NULL;
+
 static int nosys() {
   errno = ENOSYS;
   return -1;
 }
 
 int wn_ttyread(char* ptr, int len) {
-  return (int) (__wn_ttyread((i32) ptr, (i32) (ptr + len)) - (i32)ptr);
+  int ret = (int) (__wn_ttyread((i32) ptr, (i32) (ptr + len)) - (i32)ptr);
+  if (ret == -EWINCH) {
+    if (__wn_winch_handler_p) __wn_winch_handler_p();
+    errno = EINTR;
+    return -1;
+  }
+  return ret;
 }
 
 int wn_ttywrite(char* ptr, int len) {
-  return (int) (__wn_ttywrite((i32) ptr, (i32) (ptr + len)) - (i32)ptr);
+  int ret = (int) (__wn_ttywrite((i32) ptr, (i32) (ptr + len)) - (i32)ptr);
+  if (ret < 0) {
+    errno = -ret;
+    return -1;
+  }
+  return ret;
 }
 
 int wn_ttywait(int timeout_ms) {
-  return (int) __wn_ttywait((i32) timeout_ms);
+  int ret = (int) __wn_ttywait((i32) timeout_ms);
+  if (ret == -EWINCH) {
+    if (__wn_winch_handler_p) __wn_winch_handler_p();
+    errno = EINTR;
+    return -1;
+  }
+  return ret;
 }
 
 void wn_dbglog(char* log) {
@@ -50,9 +72,9 @@ void wn_dbglog(char* log) {
 }
 
 void wn_ttysize(int *w, int *h) {
-  i32 ww __attribute__((aligned(4)));;
+  i32 ww __attribute__((aligned(4)));
   i32 hh __attribute__((aligned(4)));
-  __wn_ttysize((i32) &w, (i32) &h);
+  __wn_ttysize((i32) &ww, (i32) &hh);
   *w = ww;
   *h = hh;
 }
@@ -170,5 +192,9 @@ int _rename(const char * oldpath, const char *newpath) {
 
 int _getentropy(void *buffer, size_t length) {
   return nosys();
+}
+
+void wn_set_winch_handler(wn_winch_handler_t func) {
+  __wn_winch_handler_p = func;
 }
 

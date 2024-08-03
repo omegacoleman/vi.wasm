@@ -561,14 +561,11 @@ void vis_window_close(Win *win) {
 	vis_draw(vis);
 }
 
-extern void wn_dbglog(char* log);
 Vis *vis_new(void) {
-  wn_dbglog("FAAAACK");
 	Vis *vis = calloc(1, sizeof(Vis));
 	if (!vis)
 		return NULL;
 	vis->exit_status = -1;
-  wn_dbglog("GGG");
 	if (!ui_terminal_init(&vis->ui)) {
 		free(vis);
 		return NULL;
@@ -577,7 +574,6 @@ Vis *vis_new(void) {
 	vis->change_colors = true;
 	for (size_t i = 0; i < LENGTH(vis->registers); i++)
 		register_init(&vis->registers[i]);
-  wn_dbglog("FFF");
 	vis->registers[VIS_REG_BLACKHOLE].type = REGISTER_BLACKHOLE;
 	vis->registers[VIS_REG_CLIPBOARD].type = REGISTER_CLIPBOARD;
 	vis->registers[VIS_REG_PRIMARY].type = REGISTER_CLIPBOARD;
@@ -599,10 +595,8 @@ Vis *vis_new(void) {
 		goto err;
 	if (!(vis->keymap = map_new()))
 		goto err;
-  wn_dbglog("DDD");
 	if (!sam_init(vis))
 		goto err;
-  wn_dbglog("EEE");
 	vis->mode_prev = vis->mode = &vis_modes[VIS_MODE_NORMAL];
 	vis_modes[VIS_MODE_INSERT].input  = vis_insert_key;
 	vis_modes[VIS_MODE_REPLACE].input = vis_replace_key;
@@ -1225,7 +1219,10 @@ int vis_run(Vis *vis) {
 	vis->exit_status = EXIT_SUCCESS;
 
 	while (vis->running) {
-		ui_maybe_resize(&vis->ui);
+    if (need_resize()) {
+      ui_maybe_resize(&vis->ui);
+      clear_resize();
+    }
 		ui_draw(&vis->ui);
 		idle = vis->mode->idle_timeout * 1000;
     int r = waitfd(STDIN_FILENO, timeout, 1);

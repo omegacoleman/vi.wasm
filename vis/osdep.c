@@ -7,6 +7,25 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
+
+volatile sig_atomic_t a_need_resize = 0;
+
+void sigwinch_handler(int dig) {
+  a_need_resize = 1;
+}
+
+void osdep_init() {
+  signal(SIGWINCH, sigwinch_handler);
+}
+
+int need_resize() {
+  return a_need_resize;
+}
+
+void clear_resize() {
+  a_need_resize = 0;
+}
 
 void ttysize(int* width, int* height) {
   struct winsize ws;
@@ -40,9 +59,25 @@ retry:
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <wn.h>
 
-extern int wn_ttywait(int timeout_ms);
-extern void wn_ttysize(int *w, int *h);
+int flag_need_resize = 0;
+
+void winch_handler() {
+  flag_need_resize = 1;
+}
+
+void osdep_init() {
+  wn_set_winch_handler(&winch_handler);
+}
+
+int need_resize() {
+  return flag_need_resize;
+}
+
+void clear_resize() {
+  flag_need_resize = 0;
+}
 
 void ttysize(int* width, int* height) {
   wn_ttysize(width, height);
@@ -85,9 +120,8 @@ char* realpath(const char *path, char* resolved) {
 }
 
 int chdir(const char* path) {
-  // errno = ENOENT;
-  // return -1;
-  return 0;
+  errno = ENOENT;
+  return -1;
 }
 
 char* getcwd(char* buf, size_t size) {

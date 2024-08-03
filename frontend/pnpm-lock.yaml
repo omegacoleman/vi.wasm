@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@xterm/addon-fit':
+    specifier: ^0.10.0
+    version: 0.10.0(@xterm/xterm@5.5.0)
   '@xterm/xterm':
     specifier: ^5.5.0
     version: 5.5.0
@@ -354,6 +357,14 @@ packages:
   /@types/estree@1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
     dev: true
+
+  /@xterm/addon-fit@0.10.0(@xterm/xterm@5.5.0):
+    resolution: {integrity: sha512-UFYkDm4HUahf2lnEyHvio51TNGiLK66mqP2JoATy7hRZeXaGMRDr00JiSF7m63vR5WKATF605yEggJKsw0JpMQ==}
+    peerDependencies:
+      '@xterm/xterm': ^5.0.0
+    dependencies:
+      '@xterm/xterm': 5.5.0
+    dev: false
 
   /@xterm/xterm@5.5.0:
     resolution: {integrity: sha512-hqJHYaQb5OptNunnyAnkHyM8aCjZ1MEIDTQu1iIbbTD/xops91NB5yq1ZK/dC2JDbVWtF23zUtl9JE2NqwT87A==}

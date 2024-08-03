@@ -1,6 +1,7 @@
 #include "defs.h"
 
 #include <fcntl.h>
+#include <wn.h>
 
 extern void exit(int code);
 extern int main();
@@ -20,6 +21,8 @@ struct {
   i32 buf_size;
   unsigned char buf[ASYNCIFY_STACKBUF_SIZE];
 }__attribute__((packed)) __wn_asyncify_stackbuf;
+
+extern wn_winch_handler_t __wn_winch_handler_p;
 
 void __wn_asyncify_stackbuf_init() {
   __wn_asyncify_stackbuf.buf_begin = (i32) &__wn_asyncify_stackbuf.buf;

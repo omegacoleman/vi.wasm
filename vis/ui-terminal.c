@@ -353,13 +353,11 @@ void ui_redraw(Ui *tui) {
 		win->view.need_update = true;
 }
 
-extern void wn_dbglog(char* log);
 void ui_maybe_resize(Ui *tui) {
 	int width = 80, height = 24;
 
   ttysize(&width, &height);
   if(tui->width == width && tui->height == height) return;
-  wn_dbglog("resizing");
 
 	width  = MIN(width,  UI_MAX_WIDTH);
 	height = MIN(height, UI_MAX_HEIGHT);

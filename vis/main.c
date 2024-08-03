@@ -19,6 +19,7 @@
 #include "libutf.h"
 #include "array.h"
 #include "buffer.h"
+#include "osdep.h"
 
 #define PAGE      INT_MAX
 #define PAGE_HALF (INT_MAX-1)
@@ -2205,13 +2206,8 @@ int main(void) {
   return main_p(1, argv);
 }
 
-extern void wn_dbglog(char* log);
-
 int main_p(int argc, char *argv[]) {
   int wnl = wcwidth('\n');
-  if (wnl < 0) wn_dbglog("<0");
-  if (wnl == 0) wn_dbglog("=0");
-  if (wnl > 0) wn_dbglog(">0");
 
 	for (int i = 1; i < argc; i++) {
 		if (argv[i][0] != '-') {
@@ -2230,11 +2226,9 @@ int main_p(int argc, char *argv[]) {
 		}
 	}
 
-  wn_dbglog("AAA");
 	vis = vis_new();
 	if (!vis)
 		return EXIT_FAILURE;
-  wn_dbglog("BBB");
 
 	vis_event_emit(vis, VIS_EVENT_INIT);
 
@@ -2254,6 +2248,8 @@ int main_p(int argc, char *argv[]) {
 
 	for (const char **k = keymaps; k[0]; k += 2)
 		vis_keymap_add(vis, k[0], k[1]);
+
+  osdep_init();
 
 	char *cmd = NULL;
 	bool end_of_options = false, win_created = false;

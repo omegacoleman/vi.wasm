@@ -299,7 +299,6 @@ static bool view_expand_newline(View *view, Cell *cell) {
 	return true;
 }
 
-extern void wn_dbglog(char* log);
 /* try to add another character to the view, return whether there was space left */
 static bool view_addch(View *view, Cell *cell) {
 	if (!view->line)
@@ -317,12 +316,10 @@ static bool view_addch(View *view, Cell *cell) {
   char ss[2];
   ss[0] = ch;
   ss[1] = 0;
-  wn_dbglog(ss);
 	switch (ch) {
 	case '\t':
 		return view_expand_tab(view, cell);
 	case '\n':
-    wn_dbglog("view processing NL");
 		return view_expand_newline(view, cell);
 	case ' ': {
 		const char *symbol = view->symbols[SYNTAX_SYMBOL_SPACE];
@@ -459,11 +456,9 @@ void view_draw(View *view) {
 		}
 
 		if (cell.width == 0) {
-      wn_dbglog("2");
 			strncat(prev_cell.data, cell.data, sizeof(prev_cell.data)-strlen(prev_cell.data)-1);
 			prev_cell.len += cell.len;
 		} else {
-      wn_dbglog("1");
 			if (prev_cell.len && !view_addch(view, &prev_cell))
 				break;
 			pos += prev_cell.len;
