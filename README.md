@@ -12,5 +12,4 @@ Needs clang17 to compile.
 
 - support saving and loading files
 - add virtual kayboard on mobile platform
-- fake SIGWINCH
 
