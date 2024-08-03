@@ -1,60 +1,5 @@
 #include "osdep.h"
 
-#ifndef MBEDVIS
-
-#include <sys/ioctl.h>
-#include <sys/poll.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <signal.h>
-
-volatile sig_atomic_t a_need_resize = 0;
-
-void sigwinch_handler(int dig) {
-  a_need_resize = 1;
-}
-
-void osdep_init() {
-  signal(SIGWINCH, sigwinch_handler);
-}
-
-int need_resize() {
-  return a_need_resize;
-}
-
-void clear_resize() {
-  a_need_resize = 0;
-}
-
-void ttysize(int* width, int* height) {
-  struct winsize ws;
-	if (ioctl(STDERR_FILENO, TIOCGWINSZ, &ws) != -1) {
-		if (ws.ws_col > 0)
-			*width = ws.ws_col;
-		if (ws.ws_row > 0)
-			*height = ws.ws_row;
-	}
-}
-
-int waitfd(int rfd, int timeout, int ret_eintr) {
-  struct pollfd fd;
-
-retry:
-  fd.fd = rfd;
-  fd.events = POLLIN;
-
-  int pollret = poll(&fd, 1, timeout);
-  if(pollret == -1) {
-    if(errno == EINTR && !ret_eintr)
-      goto retry;
-  }
-
-  return pollret;
-}
-
-#else
-
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -133,6 +78,4 @@ char* getcwd(char* buf, size_t size) {
   buf[1] = '\0';
   return buf;
 }
-
-#endif
 

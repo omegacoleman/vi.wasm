@@ -1,15 +1,7 @@
 #ifndef GUARD_TERMKEY_INTERNAL_H_
 #define GUARD_TERMKEY_INTERNAL_H_
 
-#define HAVE_TERMIOS
-
-#ifdef _WIN32
-# undef HAVE_TERMIOS
-#endif
-
-#ifdef MBEDVIS
-# undef HAVE_TERMIOS
-#endif
+#undef HAVE_TERMIOS
 
 #include "termkey.h"
 
