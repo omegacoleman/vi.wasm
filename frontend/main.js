@@ -8,8 +8,68 @@ var term = new Terminal({convertEol: true});
 var fitAddon = new FitAddon();
 term.loadAddon(fitAddon);
 
-term.open(document.getElementById('terminal'));
+var term_elem = document.getElementById('terminal');
+term.open(term_elem);
 fitAddon.fit();
+
+window.send_event_to_term = function (ev) {
+  term.textarea.dispatchEvent(ev);
+}
+
+var last_down_is_ctrl = false;
+term.attachCustomKeyEventHandler(ev => {
+  if (window.virtual_ctrl_state == undefined) return true;
+  let stateMod = {};
+  let doMod = false;
+  if (window.virtual_ctrl_state != 0 && (!ev.ctrlKey)) {
+    stateMod.ctrlKey = true;
+    doMod = true;
+  }
+  if (window.virtual_alt_state != 0 && (!ev.altKey)) {
+    stateMod.altKey = true;
+    doMod = true;
+  }
+  if (doMod) {
+    let mev = new KeyboardEvent(ev.type, {
+      code: ev.code,
+      key: ev.key,
+      keyCode: ev.keyCode,
+      charCode: ev.charCode,
+      which: ev.which,
+      view: ev.view,
+      shiftKey: ev.shiftKey,
+      ctrlKey: ev.ctrlKey,
+      altKey: ev.altKey,
+      ...stateMod,
+    });
+    term.textarea.dispatchEvent(mev);
+    // console.log(mev);
+    return false;
+  }
+  if (ev.type === 'keyup' && ev.key !== 'Control' && ev.key !== 'Alt' && ev.key !== 'Shift') {
+    window.set_virtual_ctrl_state(0);
+    window.set_virtual_alt_state(0);
+  }
+  if (ev.type === 'keydown') {
+    if (ev.key === 'Control') {
+      last_down_is_ctrl = true;
+    } else {
+      last_down_is_ctrl = false;
+    }
+  }
+  if (ev.type === 'keypress') {
+    last_down_is_ctrl = false;
+  }
+  if (ev.type === 'keyup' && ev.key === 'Control' && last_down_is_ctrl) {
+    if (window.virtual_ctrl_state == 0) {
+      window.set_virtual_ctrl_state(1);
+    } else {
+      window.set_virtual_ctrl_state(0);
+    }
+  }
+});
+
+// term.onKey((ev) => { console.log(ev); })
 
 var g_obj = null;
 var g_instance = null;
@@ -141,7 +201,7 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
       let view = new Uint32Array(g_buffer);
       view[waddr >> 2] = term.cols;
       view[haddr >> 2] = term.rows;
-      console.log("cols=" + term.cols + " rows=" + term.rows);
+      // console.log("cols=" + term.cols + " rows=" + term.rows);
     },
     exit: (stcode) => {
       throw new Error("program exited with status " + stcode);
@@ -154,16 +214,16 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
       if (pg_after > pg_before) {
         g_memory.grow(pg_after - pg_before);
         g_buffer = g_memory.buffer;
-        console.log('growth=' + (pg_after - pg_before));
+        // console.log('growth=' + (pg_after - pg_before));
       }
-      console.log('before: ' + sz_before + ' after:' + sz_after);
+      // console.log('before: ' + sz_before + ' after:' + sz_after);
       return sz_before;
     },
     dbglog: (buffer_start, buffer_end) => {
       let dec = new TextDecoder("utf-8");
       let arr = new Uint8Array(g_buffer.slice(buffer_start, buffer_end));
       let str = dec.decode(arr);
-      console.log(str);
+      // console.log(str);
       return buffer_end;
     },
   },
