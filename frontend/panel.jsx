@@ -138,7 +138,7 @@ function LetterKeyBtn(props) {
   } else {
     return (
       <>
-        <KeyBtn evCode={"Key" + upper_letter} evKey={lower_letter} evCharCode={lower_char_code} evKeyCode={upper_char_code} className={props.className}>{lower_letter}</KeyBtn>
+        <KeyBtn evCode={"Key" + upper_letter} evKey={lower_letter} evKeyCode={upper_char_code} className={props.className}>{lower_letter}</KeyBtn>
       </>
     );
   }
