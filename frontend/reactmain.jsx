@@ -13,7 +13,7 @@ import ModContext from './modctx.jsx'
 window.open_download_modal = null;
 
 function RunMain() {
-  React.useEffect(() => {mainjs();});
+  React.useEffect(() => {mainjs();}, []);
   return (<></>);
 }
 
