@@ -6,11 +6,16 @@ import Panel from './panel.jsx'
 import DownloadModal from './downloadmodal.jsx'
 import InfoModal from './infomodal.jsx'
 import './index.css'
-import mainUrl from './main.js?worker&url'
+import mainjs from './main.js'
 import { useDisclosure } from "@nextui-org/modal";
 import ModContext from './modctx.jsx'
 
 window.open_download_modal = null;
+
+function RunMain() {
+  React.useEffect(() => {mainjs();});
+  return (<></>);
+}
 
 function App() {
   const [ctrlState, setCtrlState] = React.useState(0);
@@ -42,9 +47,7 @@ function App() {
         <InfoModal isOpen={info_disclosure.isOpen} onOpenChange={info_disclosure.onOpenChange} />
         <div id="terminal-wrapper" className="grow min-h-0">
         <div id="terminal" className="w-full h-full">
-        <Helmet>
-          <script type="module" src={mainUrl}></script>
-        </Helmet>
+        <RunMain />
         </div>
         </div>
       </ModContext.Provider>

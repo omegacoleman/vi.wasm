@@ -3,6 +3,8 @@ import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import wasmUrl from './vis.wasm?url';
 
+export default function mainjs() {
+
 var ttybuf = "";
 var term = new Terminal({convertEol: true});
 var fitAddon = new FitAddon();
@@ -237,4 +239,6 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
     run();
   },
 );
+
+}
 
