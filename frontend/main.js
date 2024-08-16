@@ -89,6 +89,8 @@ var timeout_timer = null;
 var ewinch = -4;
 var is_winch = false;
 
+var kv = {};
+
 function enter() {
   return new Promise((resolve, reject) => {
     resolve_enter = resolve;
@@ -141,6 +143,15 @@ async function run() {
   } catch (error) {
     term.write('\r\n\x1B[1;3;31m' + error + '\x1B[0m');
   }
+}
+
+function extract_u8arr(start, end) {
+  return new Uint8Array(g_buffer.slice(start, end));
+}
+
+function extract_str(start, end) {
+  let dec = new TextDecoder("utf-8");
+  return dec.decode(extract_u8arr(start, end));
 }
 
 WebAssembly.instantiateStreaming(fetch(wasmUrl), {
@@ -205,6 +216,25 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
       view[haddr >> 2] = term.rows;
       // console.log("cols=" + term.cols + " rows=" + term.rows);
     },
+    kvpread: (key_start, key_end, pos, buffer_start, buffer_end) => {
+      console.log("kvpread");
+      let key = extract_str(key_start, key_end);
+      console.log(str);
+      return buffer_start;
+    },
+    kvpwrite: (key_start, key_end, pos, buffer_start, buffer_end) => {
+      console.log("kvpwrite");
+      let key = extract_str(key_start, key_end);
+      return buffer_end;
+    },
+    kvlen: (key_start, key_end) => {
+      console.log("kvlen");
+      return 0;
+    },
+    kvsetlen: (key_start, key_end, len) => {
+      console.log("kvsetlen");
+      return 0;
+    },
     exit: (stcode) => {
       throw new Error("program exited with status " + stcode);
     },
@@ -225,7 +255,7 @@ WebAssembly.instantiateStreaming(fetch(wasmUrl), {
       let dec = new TextDecoder("utf-8");
       let arr = new Uint8Array(g_buffer.slice(buffer_start, buffer_end));
       let str = dec.decode(arr);
-      // console.log(str);
+      console.log(str);
       return buffer_end;
     },
   },

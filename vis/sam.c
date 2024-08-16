@@ -358,7 +358,7 @@ static const OptionDef options[] = {
 	[OPTION_SAVE_METHOD] = {
 		{ "savemethod" },
 		VIS_OPTION_TYPE_STRING|VIS_OPTION_NEED_WINDOW,
-		VIS_HELP("Save method to use for current file 'auto', 'atomic' or 'inplace'")
+		VIS_HELP("Save method to use for current file 'auto' or 'inplace'")
 	},
 	[OPTION_LOAD_METHOD] = {
 		{ "loadmethod" },
@@ -1653,20 +1653,6 @@ static bool cmd_write(Vis *vis, Win *win, Command *cmd, const char *argv[], Sele
 			return false;
 
 		struct stat meta;
-		bool existing_file = !stat(path, &meta);
-		bool same_file = existing_file && file->name &&
-		                 file->stat.st_dev == meta.st_dev && file->stat.st_ino == meta.st_ino;
-
-		if (cmd->flags != '!') {
-			if (same_file && file->stat.st_mtime && file->stat.st_mtime < meta.st_mtime) {
-				vis_info_show(vis, "WARNING: file has been changed since reading it");
-				goto err;
-			}
-			if (existing_file && !same_file) {
-				vis_info_show(vis, "WARNING: file exists");
-				goto err;
-			}
-		}
 
 		if (!vis_event_emit(vis, VIS_EVENT_FILE_SAVE_PRE, file, path) && cmd->flags != '!') {
 			vis_info_show(vis, "Rejected write to `%s' by pre-save hook", path);
@@ -1704,11 +1690,12 @@ static bool cmd_write(Vis *vis, Win *win, Command *cmd, const char *argv[], Sele
 			goto err;
 		}
 
+    bool first = false;
 		if (!file->name) {
 			file_name_set(file, path);
-			same_file = true;
+			first = true;
 		}
-		if (same_file || (!existing_file && strcmp(file->name, path) == 0))
+		if (first || strcmp(file->name, path) == 0)
 			file->stat = text_stat(text);
 		vis_event_emit(vis, VIS_EVENT_FILE_SAVE_POST, file, path);
 		free(path);

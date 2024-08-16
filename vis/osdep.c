@@ -1,5 +1,7 @@
 #include "osdep.h"
 
+#include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -60,6 +62,9 @@ char *basename(char* s) {
 }
 
 char* realpath(const char *path, char* resolved) {
+  if (resolved == NULL) {
+    resolved = (char*) malloc(PATH_MAX);
+  }
   strcpy(resolved, path);
   return resolved;
 }

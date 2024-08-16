@@ -300,27 +300,6 @@ enum TextSaveMethod {
 	/** Automatically chose best option. */
 	TEXT_SAVE_AUTO,
 	/**
-	 * Save file atomically using ``rename(2)``.
-	 *
-	 * Creates a temporary file, restores all important meta data,
-	 * before moving it atomically to its final (possibly already
-	 * existing) destination using ``rename(2)``. For new files,
-	 * permissions are set to ``0666 & ~umask``.
-	 *
-	 * @rst
-	 * .. warning:: This approach does not work if:
-	 *
-	 *   - The file is a symbolic link.
-	 *   - The file is a hard link.
-	 *   - File ownership can not be preserved.
-	 *   - File group can not be preserved.
-	 *   - Directory permissions do not allow creation of a new file.
-	 *   - POSIX ACL can not be preserved (if enabled).
-	 *   - SELinux security context can not be preserved (if enabled).
-	 * @endrst
-	 */
-	TEXT_SAVE_ATOMIC,
-	/**
 	 * Overwrite file in place.
 	 * @rst
 	 * .. warning:: I/O failure might cause data loss.

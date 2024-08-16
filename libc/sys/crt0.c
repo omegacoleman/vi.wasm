@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <wn.h>
 
+#include "fdtable/fdtable.h"
+
 extern void exit(int code);
 extern int main();
 
@@ -36,6 +38,7 @@ WNEXPORT("asyncify_stackbuf_ptr") i32 __wn_asyncify_stackbuf_ptr() {
 WNEXPORT("entrance") void __wn_entrance() {
     environ = __wn_environ;
     __wn_asyncify_stackbuf_init();
+    __init_fdtable();
     int ex = main();
     exit(ex);
 }

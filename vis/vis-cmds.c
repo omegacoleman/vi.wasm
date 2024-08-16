@@ -303,13 +303,11 @@ static bool cmd_set(Vis *vis, Win *win, Command *cmd, const char *argv[], Select
 	case OPTION_SAVE_METHOD:
 		if (strcmp("auto", arg.s) == 0) {
 			win->file->save_method = TEXT_SAVE_AUTO;
-		} else if (strcmp("atomic", arg.s) == 0) {
-			win->file->save_method = TEXT_SAVE_ATOMIC;
 		} else if (strcmp("inplace", arg.s) == 0) {
 			win->file->save_method = TEXT_SAVE_INPLACE;
 		} else {
 			vis_info_show(vis, "Invalid save method `%s', expected "
-			              "'auto', 'atomic' or 'inplace'", arg.s);
+			              "'auto' or 'inplace'", arg.s);
 			return false;
 		}
 		break;

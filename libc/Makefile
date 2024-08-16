@@ -39,6 +39,7 @@ obj/.tstamp:
 	mkdir obj/misc
 	mkdir obj/syscalls
 	mkdir obj/sys
+	mkdir obj/sys/fdtable
 	mkdir obj/signal
 	mkdir obj/math
 	touch obj/.tstamp
